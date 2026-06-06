@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexus-Corp KBDSS</title>
+  <meta name="description" content="MVP de sistema de soporte a decisiones basado en conocimiento para Nexus-Corp" />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.28.1/tabler-icons.min.css" />
+</head>
+<body>
+
+<style>
+:root{
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#F7F8FA;
+  --color-background-tertiary:#EEF2F7;
+  --color-background-info:#E6F1FB;
+  --color-text-primary:#1F2937;
+  --color-text-secondary:#6B7280;
+  --color-text-info:#0C447C;
+  --color-border-secondary:#CBD5E1;
+  --color-border-tertiary:#E5E7EB;
+}
+input,select{border:1px solid var(--color-border-secondary);border-radius:8px;padding:9px 10px;font:inherit;background:#fff;color:var(--color-text-primary)}
+button{font-family:var(--font-sans)}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--color-background-tertiary)}
+.app{min-height:600px;background:var(--color-background-tertiary)}
+.screen{display:none}.screen.active{display:block}
+.sidebar{width:200px;background:#1F3864;min-height:100vh;padding:0;flex-shrink:0}
+.sidebar-logo{padding:20px 16px 12px;border-bottom:0.5px solid #2d4f7c}
+.sidebar-logo .logo-name{color:#fff;font-size:15px;font-weight:500;line-height:1}
+.sidebar-logo .logo-sub{color:#7aaddc;font-size:11px;margin-top:3px}
+.sidebar-user{padding:12px 16px;border-bottom:0.5px solid #2d4f7c;display:flex;align-items:center;gap:8px}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:#2E75B6;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff;flex-shrink:0}
+.user-info .name{color:#fff;font-size:12px;font-weight:500}
+.user-info .role{color:#7aaddc;font-size:10px}
+.nav-section{padding:8px 0}
+.nav-label{padding:6px 16px 4px;color:#5a8ab0;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;color:#b8d4ec;font-size:13px;border-left:2px solid transparent;transition:all .15s}
+.nav-item:hover{background:#2d4f7c;color:#fff}
+.nav-item.active{background:#2E75B6;color:#fff;border-left-color:#7aaddc}
+.nav-item i{font-size:16px;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.topbar-sub{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.content{padding:20px;flex:1}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.metric{background:var(--color-background-secondary);border-radius:8px;padding:12px}
+.metric-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.metric-val{font-size:22px;font-weight:500}
+.metric-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px}
+.badge-blue{background:#E6F1FB;color:#0C447C}
+.badge-green{background:#EAF3DE;color:#27500A}
+.badge-amber{background:#FAEEDA;color:#633806}
+.badge-red{background:#FCEBEB;color:#791F1F}
+.badge-gray{background:#F1EFE8;color:#444441}
+.bar-wrap{background:#e5e7eb;border-radius:3px;height:6px;overflow:hidden;margin-top:6px}
+.bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.rule-card{border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:12px 14px;margin-bottom:8px;background:var(--color-background-primary)}
+.rec-card{border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:12px 14px;margin-bottom:8px}
+.rec-card.top{border-color:#185FA5}
+.tag{font-size:11px;padding:1px 6px;border-radius:4px;background:var(--color-background-secondary);color:var(--color-text-secondary);font-family:var(--font-mono)}
+.hist-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.hist-row:last-child{border-bottom:none}
+.stars{color:#F59E0B;font-size:14px;letter-spacing:1px}
+.stars-gray{color:#D1D5DB;font-size:14px;letter-spacing:1px}
+.alert{border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:12px}
+.alert-green{background:#EAF3DE;color:#1A5C38;border-left:3px solid #3B6D11;border-radius:0;border-top-right-radius:8px;border-bottom-right-radius:8px}
+.alert-amber{background:#FAEEDA;color:#92400E;border-left:3px solid #BA7517;border-radius:0;border-top-right-radius:8px;border-bottom-right-radius:8px}
+input[type=range]{width:100%}
+.btn-prim{background:#185FA5;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer}
+.btn-prim:hover{background:#0C447C}
+.btn-sec{background:transparent;border:0.5px solid var(--color-border-secondary);border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;color:var(--color-text-primary)}
+.btn-sec:hover{background:var(--color-background-secondary)}
+.btn-danger{background:transparent;border:0.5px solid #E24B4A;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;color:#A32D2D}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px}
+.form-row{margin-bottom:12px}
+.form-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;display:block}
+.scenario-col{border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:12px}
+.toast{position:absolute;top:12px;right:12px;background:#1A5C38;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;z-index:100;display:none}
+</style>
+
+<div class="app" id="app">
+<div class="toast" id="toast"></div>
+
+<div class="screen active" id="login-screen">
+  <div style="min-height:580px;display:flex;align-items:center;justify-content:center;background:var(--color-background-tertiary)">
+    <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:16px;padding:36px 32px;width:360px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="width:48px;height:48px;background:#1F3864;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+          <i class="ti ti-brain" style="color:#fff;font-size:24px" aria-hidden="true"></i>
+        </div>
+        <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">Nexus-Corp</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">Knowledge-Based Decision Support System</div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" id="login-email" placeholder="usuario@nexuscorp.com" style="width:100%">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••" style="width:100%">
+      </div>
+      <div id="login-err" style="font-size:12px;color:#A32D2D;margin-bottom:8px;display:none">Credenciales incorrectas. Intenta de nuevo.</div>
+      <button class="btn-prim" style="width:100%;margin-bottom:16px" onclick="doLogin()">Iniciar sesión</button>
+      <div style="font-size:12px;color:var(--color-text-secondary);text-align:center;line-height:1.6">
+        <strong>Cuentas demo:</strong><br>
+        admin@nexuscorp.com / admin123 (Administrador)<br>
+        gerente@nexuscorp.com / gerente123 (Decisor)<br>
+        auditor@nexuscorp.com / auditor123 (Auditor)
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="main-screen">
+  <div style="display:flex;min-height:600px">
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-name">Nexus-Corp</div>
+        <div class="logo-sub">KBDSS v1.0</div>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sb-avatar">GR</div>
+        <div class="user-info">
+          <div class="name" id="sb-name">Gerente</div>
+          <div class="role" id="sb-role">Decisor</div>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Principal</div>
+        <div class="nav-item active" onclick="goTo('dashboard')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dashboard</div>
+        <div class="nav-item" onclick="goTo('motor')"><i class="ti ti-brain" aria-hidden="true"></i>Motor de reglas</div>
+        <div class="nav-item" onclick="goTo('whatif')"><i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>Análisis What-If</div>
+        <div class="nav-item" onclick="goTo('historial')"><i class="ti ti-history" aria-hidden="true"></i>Historial</div>
+      </div>
+      <div class="nav-section" id="admin-nav">
+        <div class="nav-label">Administración</div>
+        <div class="nav-item" onclick="goTo('base')"><i class="ti ti-database" aria-hidden="true"></i>Base de conocimiento</div>
+        <div class="nav-item" onclick="goTo('usuarios')"><i class="ti ti-users" aria-hidden="true"></i>Usuarios</div>
+      </div>
+      <div class="nav-section" style="margin-top:auto;position:absolute;bottom:0;width:200px;padding-bottom:8px">
+        <div class="nav-item" onclick="doLogout()"><i class="ti ti-logout" aria-hidden="true"></i>Cerrar sesión</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="topbar-title">Dashboard</div>
+          <div class="topbar-sub" id="topbar-sub">Resumen de inteligencia organizacional</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div id="topbar-badge" class="badge badge-blue">Decisor</div>
+          <div style="font-size:12px;color:var(--color-text-secondary)" id="topbar-date"></div>
+        </div>
+      </div>
+      <div class="content" id="content-area"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const USERS = {
+  'admin@nexuscorp.com':   { pass:'admin123',   name:'Ana López',      role:'Administrador', initials:'AL', badge:'badge-blue' },
+  'gerente@nexuscorp.com': { pass:'gerente123',  name:'Carlos Ramírez', role:'Decisor',       initials:'CR', badge:'badge-green' },
+  'auditor@nexuscorp.com': { pass:'auditor123',  name:'María Torres',   role:'Auditor',       initials:'MT', badge:'badge-amber' },
+};
+
+let currentUser = null;
+let currentPage = 'dashboard';
+let charts = {};
+
+const KB = [
+  {id:'RG-VNT-001',area:'Ventas',conds:{ticket_promedio:{op:'<',v:200},frecuencia:{op:'>',v:3}},accion:'Activar programa de fidelización premium',certeza:.87,author:'Gerente Comercial',version:'2.1',usos:42,cals:[5,5,4,5,4,5,4],activa:true},
+  {id:'RG-VNT-002',area:'Ventas',conds:{ticket_promedio:{op:'>',v:500},frecuencia:{op:'<',v:1.5}},accion:'Campaña de reactivación con descuento 15%',certeza:.79,author:'Dir. Comercial',version:'1.3',usos:18,cals:[4,3,4,5,4],activa:true},
+  {id:'RG-VNT-003',area:'Ventas',conds:{conversion:{op:'<',v:15},leads:{op:'>',v:100}},accion:'Revisar guión de ventas y capacitar en cierre',certeza:.83,author:'Dir. Comercial',version:'1.0',usos:11,cals:[5,4,5],activa:true},
+  {id:'RG-LOG-001',area:'Logística',conds:{stock_dias:{op:'<',v:7},demanda:{op:'>',v:50}},accion:'Emitir orden de compra de emergencia',certeza:.94,author:'Jefe Operaciones',version:'3.0',usos:67,cals:[5,5,5,5,4,5],activa:true},
+  {id:'RG-LOG-002',area:'Logística',conds:{stock_dias:{op:'>',v:45},rotacion:{op:'<',v:2}},accion:'Activar liquidación y renegociar pedidos',certeza:.76,author:'Jefe Operaciones',version:'1.1',usos:9,cals:[4,4,3,4],activa:true},
+  {id:'RG-FIN-001',area:'Finanzas',conds:{margen:{op:'<',v:20},costos_fijos:{op:'>',v:60}},accion:'Iniciar análisis de reducción de costos fijos',certeza:.88,author:'Dir. Financiero',version:'2.0',usos:23,cals:[5,5,4,5,5],activa:true},
+];
+
+const PARAMS_META = {
+  ticket_promedio:{label:'Ticket promedio (Q)',min:50,max:1000,step:10,area:'Ventas'},
+  frecuencia:{label:'Frecuencia de compra/mes',min:0.5,max:8,step:0.5,area:'Ventas'},
+  conversion:{label:'Tasa de conversión (%)',min:1,max:60,step:1,area:'Ventas'},
+  leads:{label:'Leads activos',min:0,max:500,step:5,area:'Ventas'},
+  stock_dias:{label:'Cobertura stock (días)',min:1,max:90,step:1,area:'Logística'},
+  demanda:{label:'Demanda semanal (uds)',min:10,max:200,step:5,area:'Logística'},
+  rotacion:{label:'Rotación inventario/año',min:0.5,max:12,step:0.5,area:'Logística'},
+  margen:{label:'Margen contribución (%)',min:5,max:60,step:1,area:'Finanzas'},
+  costos_fijos:{label:'Costos fijos / ingresos (%)',min:20,max:90,step:1,area:'Finanzas'},
+};
+
+let params = {ticket_promedio:180,frecuencia:3.5,conversion:12,leads:120,stock_dias:5,demanda:60,rotacion:1.5,margen:18,costos_fijos:65};
+let wiParams = {A:{ticket_promedio:220,frecuencia:3.5},B:{ticket_promedio:180,frecuencia:5}};
+
+let history = [
+  {id:1,fecha:'2026-05-10',area:'Ventas',regla:'RG-VNT-001',accion:'Activar programa fidelización',resultado:'Retención +12%',cal:5,tipo:'KBDSS'},
+  {id:2,fecha:'2026-05-14',area:'Logística',regla:'RG-LOG-001',accion:'Orden compra emergencia',resultado:'Evitó quiebre stock',cal:5,tipo:'KBDSS'},
+  {id:3,fecha:'2026-05-18',area:'Finanzas',regla:'RG-FIN-001',accion:'Análisis costos fijos',resultado:'Reducción 8% costos',cal:4,tipo:'KBDSS'},
+  {id:4,fecha:'2026-05-20',area:'Ventas',regla:null,accion:'Descuento 10% generalizado',resultado:'Margen −5%',cal:2,tipo:'Intuitiva'},
+  {id:5,fecha:'2026-05-25',area:'Ventas',regla:'RG-VNT-002',accion:'Campaña reactivación',resultado:'7 clientes recuperados',cal:4,tipo:'KBDSS'},
+  {id:6,fecha:'2026-05-28',area:'Logística',regla:null,accion:'Pedido intuitivo proveedor B',resultado:'Sobrestock 3 semanas',cal:1,tipo:'Intuitiva'},
+];
+
+let pendingRate = null;
+
+function evalRule(rule,p){
+  return Object.entries(rule.conds).every(([k,c])=>{
+    const v=p[k]; if(v===undefined)return false;
+    return c.op==='<'?v<c.v:v>c.v;
+  });
+}
+function avgCal(arr){return arr.length?(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1):'-'}
+function starsHtml(n,max=5){
+  let h='';
+  for(let i=1;i<=max;i++) h+=`<span style="color:${i<=n?'#F59E0B':'#D1D5DB'}">★</span>`;
+  return h;
+}
+function certBar(v){
+  const c=v>.8?'#3B6D11':v>.65?'#BA7517':'#A32D2D';
+  return `<div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+    <div style="flex:1;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden">
+      <div style="width:${Math.round(v*100)}%;height:100%;background:${c};border-radius:3px"></div>
+    </div>
+    <span style="font-size:12px;font-weight:500;color:${c};min-width:36px">${Math.round(v*100)}%</span>
+  </div>`;
+}
+function showToast(msg,color='#1A5C38'){
+  const t=document.getElementById('toast');
+  t.style.background=color; t.textContent=msg; t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+function doLogin(){
+  const e=document.getElementById('login-email').value.trim();
+  const p=document.getElementById('login-pass').value;
+  const u=USERS[e];
+  if(!u||u.pass!==p){document.getElementById('login-err').style.display='block';return;}
+  document.getElementById('login-err').style.display='none';
+  currentUser=u;
+  document.getElementById('sb-avatar').textContent=u.initials;
+  document.getElementById('sb-name').textContent=u.name;
+  document.getElementById('sb-role').textContent=u.role;
+  document.getElementById('topbar-badge').className='badge '+u.badge;
+  document.getElementById('topbar-badge').textContent=u.role;
+  document.getElementById('admin-nav').style.display=u.role==='Administrador'?'block':'none';
+  document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('es-GT',{day:'2-digit',month:'short',year:'numeric'});
+  show('main-screen'); goTo('dashboard');
+}
+function doLogout(){currentUser=null;show('login-screen');}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function goTo(page){
+  currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if (typeof event !== 'undefined' && event && event.currentTarget) event.currentTarget.classList.add('active');
+  Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}});charts={};
+  const titles={dashboard:['Dashboard','Resumen de inteligencia organizacional'],motor:['Motor de Reglas','Consulta basada en conocimiento'],whatif:['Análisis What-If','Simulación de escenarios'],historial:['Historial de Decisiones','Ciclo de retroalimentación'],base:['Base de Conocimiento','Administración de reglas'],usuarios:['Gestión de Usuarios','Control de acceso por roles']};
+  const t=titles[page]||['',''];
+  document.getElementById('topbar-title').textContent=t[0];
+  document.getElementById('topbar-sub').textContent=t[1];
+  const renders={dashboard:renderDashboard,motor:renderMotor,whatif:renderWhatIf,historial:renderHistorial,base:renderBase,usuarios:renderUsuarios};
+  (renders[page]||renderDashboard)();
+}
+
+function renderDashboard(){
+  const kbdss=history.filter(h=>h.tipo==='KBDSS');
+  const intuit=history.filter(h=>h.tipo==='Intuitiva');
+  const adopcion=Math.round(kbdss.length/history.length*100);
+  const calPos=kbdss.filter(h=>h.cal>=4).length;
+  const calTot=kbdss.filter(h=>h.cal>0).length;
+  const precision=calTot?Math.round(calPos/calTot*100):0;
+  const activas=KB.filter(r=>r.activa).length;
+  const avgK=avgCal(kbdss.filter(h=>h.cal>0).map(h=>h.cal));
+  const avgI=avgCal(intuit.filter(h=>h.cal>0).map(h=>h.cal));
+  document.getElementById('content-area').innerHTML=`
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label"><i class="ti ti-trending-up" aria-hidden="true"></i> Adopción KBDSS</div><div class="metric-val" style="color:${adopcion>=70?'#27500A':'#633806'}">${adopcion}%</div><div class="metric-sub">meta ≥70%</div></div>
+    <div class="metric"><div class="metric-label"><i class="ti ti-target" aria-hidden="true"></i> Precisión</div><div class="metric-val" style="color:${precision>=80?'#27500A':'#633806'}">${precision}%</div><div class="metric-sub">calificaciones ≥4★</div></div>
+    <div class="metric"><div class="metric-label"><i class="ti ti-database" aria-hidden="true"></i> Reglas activas</div><div class="metric-val">${activas}</div><div class="metric-sub">en base de conocimiento</div></div>
+    <div class="metric"><div class="metric-label"><i class="ti ti-star" aria-hidden="true"></i> Cal. promedio</div><div class="metric-val">${avgK}<span style="font-size:13px;color:var(--color-text-secondary)">/5</span></div><div class="metric-sub">vs. intuitiva: ${avgI}/5</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Tendencia de adopción y precisión</div>
+      <div style="display:flex;gap:12px;margin-bottom:8px;font-size:12px;color:var(--color-text-secondary)">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:3px;background:#185FA5;display:inline-block"></span>Adopción</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:3px;background:#3B6D11;display:inline-block;border-top:2px dashed #3B6D11;height:0"></span>Precisión</span>
+      </div>
+      <div style="position:relative;height:180px"><canvas id="ch1" role="img" aria-label="Líneas de adopción y precisión mensual">Adopción: 22,35,48,58,67,72%. Precisión: 70,74,78,80,84,87%.</canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">KBDSS vs. decisión intuitiva</div>
+      <div style="display:flex;gap:12px;margin-bottom:8px;font-size:12px;color:var(--color-text-secondary)">
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#185FA5;display:inline-block;border-radius:2px"></span>KBDSS</span>
+        <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#BA7517;display:inline-block;border-radius:2px;opacity:.6"></span>Intuitiva</span>
+      </div>
+      <div style="position:relative;height:180px"><canvas id="ch2" role="img" aria-label="Radar comparativo KBDSS vs intuitiva">KBDSS supera en precisión, trazabilidad y adaptabilidad.</canvas></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Distribución de decisiones por área</div>
+      <div style="position:relative;height:160px"><canvas id="ch3" role="img" aria-label="Barras de decisiones por área">Ventas: 3, Logística: 2, Finanzas: 1.</canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Últimas decisiones registradas</div>
+      ${history.slice(0,4).map(h=>`
+      <div class="hist-row">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.accion}</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">${h.area} · ${h.fecha}</div>
+        </div>
+        <span class="badge ${h.tipo==='KBDSS'?'badge-blue':'badge-amber'}">${h.tipo}</span>
+        <div>${h.cal>0?starsHtml(h.cal):'<span style="font-size:11px;color:var(--color-text-secondary)">—</span>'}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+  setTimeout(()=>{
+    charts.ch1=new Chart(document.getElementById('ch1'),{type:'line',data:{labels:['Ene','Feb','Mar','Abr','May','Jun'],datasets:[{label:'Adopción',data:[22,35,48,58,67,72],borderColor:'#185FA5',borderWidth:2,pointRadius:3,tension:.4,fill:false},{label:'Precisión',data:[70,74,78,80,84,87],borderColor:'#3B6D11',borderWidth:2,borderDash:[5,3],pointRadius:3,tension:.4,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{font:{size:11},callback:v=>v+'%'},grid:{color:'#f0f0f0'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+    charts.ch2=new Chart(document.getElementById('ch2'),{type:'radar',data:{labels:['Precisión','Adopción','Calidad','Velocidad','Trazabilidad'],datasets:[{label:'KBDSS',data:[87,72,84,80,95],borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,0.15)',borderWidth:2,pointRadius:2},{label:'Intuitiva',data:[58,100,40,70,20],borderColor:'#BA7517',backgroundColor:'rgba(186,117,23,0.1)',borderWidth:2,borderDash:[4,3],pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},pointLabels:{font:{size:10}}}}}});
+    charts.ch3=new Chart(document.getElementById('ch3'),{type:'bar',data:{labels:['Ventas','Logística','Finanzas'],datasets:[{label:'KBDSS',data:[3,2,1],backgroundColor:'#B5D4F4',borderColor:'#185FA5',borderWidth:1,borderRadius:4},{label:'Intuitiva',data:[1,1,0],backgroundColor:'#FAC775',borderColor:'#BA7517',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{font:{size:11},stepSize:1},grid:{color:'#f0f0f0'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  },100);
+}
+
+function renderMotor(){
+  const areas=['Ventas','Logística','Finanzas','Todas'];
+  document.getElementById('content-area').innerHTML=`
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Parámetros de entrada</div>
+      <div style="margin-bottom:10px">
+        <label class="form-label">Área de negocio</label>
+        <select id="m-area" onchange="renderMotorParams()" style="width:100%">
+          ${areas.map(a=>`<option>${a}</option>`).join('')}
+        </select>
+      </div>
+      <div id="motor-params"></div>
+      <button class="btn-prim" style="width:100%;margin-top:12px" onclick="runMotor()">
+        <i class="ti ti-search" aria-hidden="true"></i> Consultar KBDSS
+      </button>
+    </div>
+    <div>
+      <div id="motor-results"><div class="card" style="text-align:center;padding:40px 20px;color:var(--color-text-secondary)">
+        <i class="ti ti-brain" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i>
+        <div style="font-size:14px">Ingresa los parámetros y presiona<br><strong>Consultar KBDSS</strong></div>
+      </div></div>
+    </div>
+  </div>`;
+  renderMotorParams();
+}
+
+function renderMotorParams(){
+  const area=document.getElementById('m-area')?.value||'Ventas';
+  const entries=Object.entries(PARAMS_META).filter(([,m])=>area==='Todas'||m.area===area);
+  document.getElementById('motor-params').innerHTML=entries.map(([k,m])=>`
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="color:var(--color-text-secondary)">${m.label}</span>
+        <span id="pv-${k}" style="font-weight:500">${params[k]}</span>
+      </div>
+      <input type="range" min="${m.min}" max="${m.max}" step="${m.step}" value="${params[k]}"
+        oninput="params['${k}']=parseFloat(this.value);document.getElementById('pv-${k}').textContent=this.value">
+    </div>`).join('');
+}
+
+function runMotor(){
+  const area=document.getElementById('m-area')?.value||'Ventas';
+  const recs=KB.filter(r=>r.activa&&(area==='Todas'||r.area===area)&&evalRule(r,params)).sort((a,b)=>b.certeza-a.certeza);
+  const areaColor={Ventas:'#185FA5',Logística:'#0F6E56',Finanzas:'#BA7517'};
+  document.getElementById('motor-results').innerHTML=recs.length?`
+    <div style="font-size:13px;font-weight:500;margin-bottom:10px;color:var(--color-text-primary)">${recs.length} recomendación${recs.length>1?'es':''} encontrada${recs.length>1?'s':''}</div>
+    ${recs.map((r,i)=>`
+    <div class="rec-card ${i===0?'top':''}" style="background:var(--color-background-primary)">
+      ${i===0?'<span class="badge badge-green" style="margin-bottom:6px;display:inline-block">Recomendación principal</span>':''}
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="font-size:13px;font-weight:500;flex:1">${r.accion}</div>
+        <span class="badge" style="background:${areaColor[r.area]}22;color:${areaColor[r.area]};flex-shrink:0">${r.area}</span>
+      </div>
+      ${certBar(r.certeza)}
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
+        <span><i class="ti ti-id" aria-hidden="true"></i> ${r.id}</span>
+        <span><i class="ti ti-user" aria-hidden="true"></i> ${r.author}</span>
+        <span><i class="ti ti-activity" aria-hidden="true"></i> ${r.usos} usos</span>
+        <span><i class="ti ti-star" aria-hidden="true"></i> ${avgCal(r.cals)}/5</span>
+      </div>
+      <div style="margin-top:8px;padding:8px 10px;background:var(--color-background-secondary);border-radius:6px;font-size:11px">
+        <strong>Condiciones:</strong> ${Object.entries(r.conds).map(([k,c])=>`${PARAMS_META[k]?.label||k} ${c.op} ${c.v}`).join(' · ')}
+      </div>
+      ${currentUser?.role!=='Auditor'?`<button class="btn-sec btn-sm" style="margin-top:8px" onclick="registerDecision('${r.id}','${r.accion}','${r.area}')">
+        <i class="ti ti-check" aria-hidden="true"></i> Registrar como decisión tomada
+      </button>`:''}
+    </div>`).join('')}
+  `:`<div class="card" style="text-align:center;padding:30px;color:var(--color-text-secondary)">
+    <i class="ti ti-mood-empty" style="font-size:28px;display:block;margin-bottom:8px" aria-hidden="true"></i>
+    <div style="font-size:13px">Ninguna regla aplica a estos parámetros</div>
+  </div>`;
+}
+
+function registerDecision(id,accion,area){
+  const nueva={id:history.length+1,fecha:new Date().toISOString().split('T')[0],area,regla:id,accion,resultado:'Pendiente',cal:0,tipo:'KBDSS'};
+  history.unshift(nueva); pendingRate=nueva.id;
+  showToast('Decisión registrada. Califícala en el Historial.');
+}
+
+function renderWhatIf(){
+  const areaColor={Ventas:'#185FA5',base:'#5F5E5A'};
+  document.getElementById('content-area').innerHTML=`
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">Comparador de escenarios — área Ventas</div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+      ${['base','A','B'].map(s=>`
+      <div class="scenario-col" style="border-color:${s==='base'?'#888780':s==='A'?'#185FA5':'#0F6E56'}">
+        <div style="font-size:13px;font-weight:500;margin-bottom:10px;color:${s==='base'?'#444441':s==='A'?'#185FA5':'#0F6E56'}">
+          ${s==='base'?'Situación base':s==='A'?'Escenario A':'Escenario B'}
+        </div>
+        ${['ticket_promedio','frecuencia'].map(k=>`
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">
+            <span style="color:var(--color-text-secondary)">${PARAMS_META[k].label}</span>
+            <span id="wv-${s}-${k}" style="font-weight:500">${s==='base'?params[k]:wiParams[s][k]}</span>
+          </div>
+          ${s==='base'?`<div style="height:4px;background:#e5e7eb;border-radius:2px"><div style="width:${Math.round((params[k]-PARAMS_META[k].min)/(PARAMS_META[k].max-PARAMS_META[k].min)*100)}%;height:100%;background:#888780;border-radius:2px"></div></div>`
+          :`<input type="range" min="${PARAMS_META[k].min}" max="${PARAMS_META[k].max}" step="${PARAMS_META[k].step}" value="${wiParams[s][k]}"
+            oninput="wiParams['${s}']['${k}']=parseFloat(this.value);document.getElementById('wv-${s}-${k}').textContent=this.value;updateWhatIf()">`}
+        </div>`).join('')}
+        <div id="wi-res-${s}" style="margin-top:8px;padding:8px;background:var(--color-background-secondary);border-radius:6px;font-size:12px;min-height:60px"></div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Certeza máxima por escenario</div>
+    <div style="position:relative;height:160px"><canvas id="ch-wi" role="img" aria-label="Barras de certeza por escenario">Comparativo de certeza entre escenarios.</canvas></div>
+  </div>`;
+  updateWhatIf();
+}
+
+function updateWhatIf(){
+  const base=KB.filter(r=>r.activa&&r.area==='Ventas'&&evalRule(r,params));
+  const A=KB.filter(r=>r.activa&&r.area==='Ventas'&&evalRule(r,{...params,...wiParams.A}));
+  const B=KB.filter(r=>r.activa&&r.area==='Ventas'&&evalRule(r,{...params,...wiParams.B}));
+  [['base',base],['A',A],['B',B]].forEach(([s,recs])=>{
+    const el=document.getElementById(`wi-res-${s}`);
+    if(!el)return;
+    el.innerHTML=recs.length?recs.map(r=>`<div style="margin-bottom:4px"><div style="font-weight:500">${r.accion}</div>${certBar(r.certeza)}</div>`).join('')
+      :'<span style="color:var(--color-text-secondary)">Ninguna regla aplica</span>';
+  });
+  const maxCert=arr=>arr.length?Math.round(Math.max(...arr.map(r=>r.certeza))*100):0;
+  if(charts.wi){try{charts.wi.destroy()}catch(e){}}
+  setTimeout(()=>{
+    const el=document.getElementById('ch-wi');
+    if(!el)return;
+    charts.wi=new Chart(el,{type:'bar',data:{
+      labels:['Situación base','Escenario A','Escenario B'],
+      datasets:[{data:[maxCert(base),maxCert(A),maxCert(B)],backgroundColor:['#D3D1C7','#B5D4F4','#9FE1CB'],borderColor:['#888780','#185FA5','#0F6E56'],borderWidth:1,borderRadius:6}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'#f0f0f0'}},x:{ticks:{font:{size:11}},grid:{display:false}}}}});
+  },50);
+}
+
+function renderHistorial(){
+  const pending=history.find(h=>h.id===pendingRate);
+  document.getElementById('content-area').innerHTML=`
+  ${pending?`<div class="alert alert-amber" style="margin-bottom:12px">
+    <strong>Decisión pendiente de calificación:</strong> "${pending.accion}"<br>
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:13px">Tu calificación:</span>
+      ${[1,2,3,4,5].map(n=>`<span onclick="rateDecision(${pending.id},${n})" style="font-size:20px;cursor:pointer;color:${n<=0?'#D1D5DB':'#D1D5DB'}" id="rs-${n}">★</span>`).join('')}
+      <input type="text" id="rate-comment" placeholder="Resultado observado (opcional)" style="flex:1;min-width:120px">
+      <button class="btn-prim btn-sm" onclick="submitRate()">Enviar</button>
+    </div>
+  </div>`:''}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="margin:0">Registro de decisiones</div>
+      <select id="hist-filter" onchange="filterHist()" style="font-size:12px;padding:4px 8px">
+        <option value="">Todas las áreas</option><option>Ventas</option><option>Logística</option><option>Finanzas</option>
+      </select>
+    </div>
+    <div id="hist-list"></div>
+  </div>`;
+  filterHist();
+}
+
+let rateSelected=0;
+function rateDecision(id,n){
+  rateSelected=n;
+  for(let i=1;i<=5;i++) document.getElementById(`rs-${i}`).style.color=i<=n?'#F59E0B':'#D1D5DB';
+}
+function submitRate(){
+  if(!rateSelected){showToast('Selecciona una calificación','#BA7517');return;}
+  const comment=document.getElementById('rate-comment')?.value||'Resultado registrado';
+  history=history.map(h=>h.id===pendingRate?{...h,cal:rateSelected,resultado:comment}:h);
+  pendingRate=null; rateSelected=0;
+  showToast('Calificación registrada. ¡Gracias por el feedback!');
+  renderHistorial();
+}
+function filterHist(){
+  const f=document.getElementById('hist-filter')?.value||'';
+  const filtered=history.filter(h=>!f||h.area===f);
+  document.getElementById('hist-list').innerHTML=filtered.map(h=>`
+  <div class="hist-row">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:500">${h.accion}</div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">${h.area} · ${h.fecha}</div>
+      <div style="font-size:11px;margin-top:3px;padding:4px 8px;background:var(--color-background-secondary);border-radius:4px;display:inline-block">${h.resultado}</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <span class="badge ${h.tipo==='KBDSS'?'badge-blue':'badge-amber'}">${h.tipo}</span>
+      <div style="margin-top:4px">${h.cal>0?starsHtml(h.cal):'<span style="font-size:11px;color:var(--color-text-secondary)">Sin calificar</span>'}</div>
+    </div>
+  </div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--color-text-secondary);font-size:13px">No hay registros para este filtro</div>';
+}
+
+function renderBase(){
+  if(currentUser?.role!=='Administrador'){
+    document.getElementById('content-area').innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--color-text-secondary)"><i class="ti ti-lock" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i><div style="font-size:14px">Acceso restringido a Administradores de Conocimiento</div></div>';
+    return;
+  }
+  document.getElementById('content-area').innerHTML=`
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="font-size:13px;color:var(--color-text-secondary)">${KB.filter(r=>r.activa).length} reglas activas · ${KB.filter(r=>!r.activa).length} inactivas</div>
+    <button class="btn-prim btn-sm" onclick="showAddRule()"><i class="ti ti-plus" aria-hidden="true"></i> Nueva regla</button>
+  </div>
+  <div id="add-rule-form" style="display:none" class="card" style="margin-bottom:14px">
+    <div class="card-title">Agregar nueva regla</div>
+    <div class="grid2">
+      <div class="form-row"><label class="form-label">Área</label><select id="nr-area" style="width:100%"><option>Ventas</option><option>Logística</option><option>Finanzas</option></select></div>
+      <div class="form-row"><label class="form-label">Certeza: <span id="nr-cert-val">0.75</span></label><input type="range" min="0.5" max="1" step="0.01" value="0.75" oninput="document.getElementById('nr-cert-val').textContent=parseFloat(this.value).toFixed(2)" id="nr-cert"></div>
+    </div>
+    <div class="form-row"><label class="form-label">Acción recomendada</label><input type="text" id="nr-accion" placeholder="Describe la acción..." style="width:100%"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-prim btn-sm" onclick="saveRule()">Guardar regla</button>
+      <button class="btn-sec btn-sm" onclick="document.getElementById('add-rule-form').style.display='none'">Cancelar</button>
+    </div>
+  </div>
+  ${KB.map(r=>`
+  <div class="rule-card" style="opacity:${r.activa?1:.55}">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+      <div style="flex:1">
+        <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+          <span class="tag">${r.id}</span>
+          <span class="badge badge-${r.area==='Ventas'?'blue':r.area==='Logística'?'green':'amber'}">${r.area}</span>
+          ${!r.activa?'<span class="badge badge-gray">Inactiva</span>':''}
+        </div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:6px">${r.accion}</div>
+        ${certBar(r.certeza)}
+        <div style="font-size:11px;color:var(--color-text-secondary);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
+          <span><i class="ti ti-user" aria-hidden="true"></i> ${r.author}</span>
+          <span><i class="ti ti-versions" aria-hidden="true"></i> v${r.version}</span>
+          <span><i class="ti ti-activity" aria-hidden="true"></i> ${r.usos} usos</span>
+          <span><i class="ti ti-star" aria-hidden="true"></i> ${avgCal(r.cals)}/5 (${r.cals.length} cal.)</span>
+        </div>
+      </div>
+      <button class="btn-danger" onclick="toggleRule('${r.id}')">${r.activa?'Desactivar':'Reactivar'}</button>
+    </div>
+  </div>`).join('')}`;
+}
+
+function showAddRule(){document.getElementById('add-rule-form').style.display='block';}
+function saveRule(){
+  const accion=document.getElementById('nr-accion').value.trim();
+  if(!accion){showToast('Escribe la acción recomendada','#BA7517');return;}
+  const area=document.getElementById('nr-area').value;
+  const cert=parseFloat(document.getElementById('nr-cert').value);
+  const num=String(KB.filter(r=>r.area===area).length+1).padStart(3,'0');
+  const pre=area==='Ventas'?'VNT':area==='Logística'?'LOG':'FIN';
+  KB.push({id:`RG-${pre}-${num}`,area,conds:{},accion,certeza:cert,author:currentUser.name,version:'1.0',usos:0,cals:[],activa:true});
+  showToast('Regla agregada exitosamente');
+  renderBase();
+}
+function toggleRule(id){
+  const r=KB.find(x=>x.id===id);
+  if(r){r.activa=!r.activa;showToast(r.activa?'Regla reactivada':'Regla desactivada');}
+  renderBase();
+}
+
+function renderUsuarios(){
+  if(currentUser?.role!=='Administrador'){
+    document.getElementById('content-area').innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--color-text-secondary)"><i class="ti ti-lock" style="font-size:32px;display:block;margin-bottom:8px" aria-hidden="true"></i><div style="font-size:14px">Acceso restringido a Administradores</div></div>';
+    return;
+  }
+  const roles=[['Administrador','Ana López','admin@nexuscorp.com','AL','badge-blue'],['Decisor','Carlos Ramírez','gerente@nexuscorp.com','CR','badge-green'],['Decisor','Luis Mendoza','luis@nexuscorp.com','LM','badge-green'],['Auditor','María Torres','auditor@nexuscorp.com','MT','badge-amber']];
+  document.getElementById('content-area').innerHTML=`
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="card-title" style="margin:0">Usuarios del sistema</div>
+      <button class="btn-prim btn-sm"><i class="ti ti-plus" aria-hidden="true"></i> Invitar usuario</button>
+    </div>
+    ${roles.map(([rol,nombre,email,ini,badge])=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--color-text-info);flex-shrink:0">${ini}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${nombre}</div>
+        <div style="font-size:11px;color:var(--color-text-secondary)">${email}</div>
+      </div>
+      <span class="badge ${badge}">${rol}</span>
+      <button class="btn-sec btn-sm"><i class="ti ti-edit" aria-hidden="true"></i></button>
+    </div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="card-title">Permisos por rol</div>
+    <table style="width:100%;font-size:12px;border-collapse:collapse">
+      <thead><tr>${['Función','Administrador','Decisor','Auditor'].map(h=>`<th style="text-align:${h==='Función'?'left':'center'};padding:8px 6px;border-bottom:0.5px solid var(--color-border-tertiary);font-weight:500">${h}</th>`).join('')}</tr></thead>
+      <tbody>${[
+        ['Consultar KBDSS','✓','✓','✓'],
+        ['Registrar decisiones','✓','✓','✗'],
+        ['Calificar recomendaciones','✓','✓','✗'],
+        ['Ver historial','✓','✓','✓'],
+        ['Análisis What-If','✓','✓','✗'],
+        ['Dashboard KPIs','✓','✓','✓'],
+        ['Gestionar reglas','✓','✗','✗'],
+        ['Administrar usuarios','✓','✗','✗'],
+        ['Generar reportes','✓','✗','✓'],
+      ].map((row,i)=>`<tr style="background:${i%2===0?'transparent':'var(--color-background-secondary)'}">
+        ${row.map((c,ci)=>`<td style="padding:7px 6px;text-align:${ci===0?'left':'center'};color:${ci>0?c==='✓'?'#27500A':'#791F1F':'var(--color-text-primary)'};font-weight:${ci>0?'500':'400'}">${c}</td>`).join('')}
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+</script>
+
+</body>
+</html>
